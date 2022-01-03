@@ -1,4 +1,5 @@
 import requests
+import datetime as dt
 from decimal import Decimal
 
 
@@ -16,8 +17,8 @@ def currency_rates(currency):
     else:
         return None
 
-    return currency_value
+    date_index = resp_text.find('Date')
+    date_str = resp_text[date_index + 6:date_index + 16]
+    date = dt.datetime.strptime(date_str, '%d.%m.%Y').date()
 
-
-print(currency_rates('usd'))
-print(currency_rates('EUR'))
+    return currency_value, date
