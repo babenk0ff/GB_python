@@ -1,22 +1,24 @@
 import requests
+import os
 
-url = 'https://github.com/elastic/examples/raw/master/Common%20Data%20Formats/nginx_logs/nginx_logs'
-response = requests.get(url)
-
+URL = 'https://github.com/elastic/examples/raw/master/Common%20Data%20Formats/nginx_logs/nginx_logs'
 FILENAME = 'nginx_logs.txt'
 
-with open(FILENAME, 'w', encoding='utf-8') as f:
-    f.write(response.text)
+if not os.path.isfile(FILENAME):
+    with requests.get(URL, stream=True) as r:
+        with open(FILENAME, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                f.write(chunk)
 
 with open(FILENAME, 'r', encoding='utf-8') as f:
     user_requests_amount = {}
     for line in f.readlines():
-        ip = line.split(' - - ')[0]
+        remote_addr = line.split(' - - ')[0]
 
-        if ip not in user_requests_amount.keys():
-            user_requests_amount[ip] = 1
+        if remote_addr not in user_requests_amount.keys():
+            user_requests_amount[remote_addr] = 1
         else:
-            user_requests_amount[ip] += 1
+            user_requests_amount[remote_addr] += 1
 
 inverse = [(value, key) for key, value in user_requests_amount.items()]
 spammer = max(inverse)
